@@ -1,0 +1,20 @@
+# Env files
+.env
+.env.*
+**/.env
+**/.env.*
+
+# Spring local configs
+**/application-local.yml
+**/application-dev.yml
+**/application-docker.yml
+**/application-*.properties
+
+# Logs/build/IDE
+**/target/
+**/.idea/
+**/.vscode/
+**/*.log
+
+# Docker overrides
+docker-compose.override.yml
