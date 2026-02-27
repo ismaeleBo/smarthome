@@ -1,0 +1,35 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /auth
+spring:
+  application:
+    name: auth-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+
+app:
+  bootstrap:
+    admin:
+      enabled: true
+      email: ${APP_BOOTSTRAP_ADMIN_EMAIL}
+      password: ${APP_BOOTSTRAP_ADMIN_PASSWORD}
+
+security:
+  jwt:
+    issuer: ${SECURITY_JWT_ISSUER}
+    secret: ${SECURITY_JWT_SECRET}
+    expires-minutes: ${SECURITY_JWT_EXPIRES_MINUTES:60}
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true

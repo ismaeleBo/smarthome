@@ -18,3 +18,5 @@
 
 # Docker overrides
 docker-compose.override.yml
+
+.DS_Store
