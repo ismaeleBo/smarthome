@@ -1,0 +1,27 @@
+server:
+  port: 8081
+  servlet:
+    context-path: /measurements
+spring:
+  application:
+    name: measurements-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+security:
+  jwt:
+    issuer: ${SECURITY_JWT_ISSUER}
+    secret: ${SECURITY_JWT_SECRET}
+    expires-minutes: ${SECURITY_JWT_EXPIRES_MINUTES:60}
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
