@@ -26,6 +26,6 @@ public class InternalAuthController {
                 request.birthDate()
         );
 
-        return ResponseEntity.ok(new ProvisionUserResponse(result.userId(), result.activationToken()));
+        return ResponseEntity.ok(new ProvisionUserResponse(result.userId()));
     }
 }

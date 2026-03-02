@@ -4,5 +4,6 @@ public enum InvitationStatus {
     VALID,
     EXPIRED,
     CONSUMED,
-    NOT_FOUND
+    NOT_FOUND,
+    REVOKED
 }

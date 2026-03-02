@@ -1,5 +1,7 @@
 package com.ismaelebonaventura.auth_service.service;
 
+import com.ismaelebonaventura.auth_service.messaging.NotificationPublisher;
+import com.ismaelebonaventura.auth_service.messaging.events.AccountActivationCreatedEvent;
 import com.ismaelebonaventura.auth_service.model.Role;
 import com.ismaelebonaventura.auth_service.model.User;
 import com.ismaelebonaventura.auth_service.model.UserStatus;
@@ -18,6 +20,7 @@ public class ProvisioningService {
 
     private final UserRepository userRepository;
     private final ActivationService activationService;
+    private final NotificationPublisher notificationPublisher;
 
     @Transactional
     @Audited(action = "PROVISION_USER")
@@ -69,10 +72,21 @@ public class ProvisioningService {
 
         userRepository.save(user);
 
-        String activationToken = activationService.createActivationToken(user);
+        var tokenData = activationService.createActivationToken(user);
 
-        return new ProvisioningResult(user.getId(), activationToken);
+        notificationPublisher.publishActivationCreated(
+                new AccountActivationCreatedEvent(
+                        user.getId(),
+                        user.getEmail(),
+                        user.getRole().name(),
+                        tokenData.token(),
+                        tokenData.expiresAt()
+                )
+        );
+
+        return new ProvisioningResult(user.getId(), tokenData.token());
     }
 
-    public record ProvisioningResult(UUID userId, String activationToken) {}
+    public record ProvisioningResult(UUID userId, String activationToken) {
+    }
 }

@@ -17,6 +17,16 @@ services:
       timeout: 3s
       retries: 20
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+
   auth-service:
     build: ./auth-service
     container_name: auth-service
@@ -30,6 +40,8 @@ services:
       SECURITY_JWT_EXPIRES_MINUTES: ${JWT_EXPIRES_MINUTES}
       APP_BOOTSTRAP_ADMIN_EMAIL: ${ADMIN_EMAIL}
       APP_BOOTSTRAP_ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
     depends_on:
       postgres:
         condition: service_healthy
@@ -64,6 +76,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       SECURITY_JWT_ISSUER: ${JWT_ISSUER}
       SECURITY_JWT_SECRET: ${JWT_SECRET}
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
     depends_on:
       postgres:
         condition: service_healthy
@@ -73,6 +87,19 @@ services:
         condition: service_started
     ports:
       - "8082:8082"
+
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service
+    depends_on:
+      - rabbitmq
+    environment:
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
+    ports:
+      - "8084:8084"
 
   api-gateway:
     build: ./api-gateway

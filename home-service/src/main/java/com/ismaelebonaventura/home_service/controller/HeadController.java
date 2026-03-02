@@ -32,4 +32,11 @@ public class HeadController {
 
         return ResponseEntity.ok(new CreateInvitationResponse(expiresAt));
     }
+
+    @PostMapping("/invitations/{token}/revoke")
+    public ResponseEntity<Void> revoke(@PathVariable String token) {
+        UUID headUserId = (UUID) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        invitationService.revokeInvitation(headUserId, token);
+        return ResponseEntity.noContent().build();
+    }
 }

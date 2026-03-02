@@ -57,8 +57,8 @@ public class GlobalExceptionHandler {
                 .body(ApiError.of(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal server error"));
     }
 
-    @ExceptionHandler(com.ismaelebonaventura.home_service.exception.NotFoundException.class)
-    public ResponseEntity<ApiError> handleNotFound(com.ismaelebonaventura.home_service.exception.NotFoundException ex) {
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ApiError> handleNotFound(NotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ApiError.of(HttpStatus.NOT_FOUND.value(), ex.getMessage()));
     }

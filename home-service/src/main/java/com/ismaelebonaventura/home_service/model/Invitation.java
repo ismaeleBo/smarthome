@@ -43,6 +43,13 @@ public class Invitation {
     @Column(name = "consumed_at")
     private LocalDateTime consumedAt;
 
+    @Getter
+    @Column(nullable = false)
+    private boolean revoked = false;
+
+    @Column(name = "revoked_at")
+    private LocalDateTime revokedAt;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -51,7 +58,7 @@ public class Invitation {
         this.id = UUID.randomUUID();
         this.token = token;
         this.homeId = homeId;
-        this.email = email;
+        this.email = email.trim().toLowerCase();;
         this.expiresAt = expiresAt;
         this.consumed = false;
     }
@@ -61,6 +68,9 @@ public class Invitation {
     }
 
     public void consume(LocalDateTime now) {
+        if (this.revoked) {
+            throw new IllegalStateException("Invitation revoked");
+        }
         if (this.consumed) {
             throw new IllegalStateException("Invitation already consumed");
         }
@@ -69,5 +79,16 @@ public class Invitation {
         }
         this.consumed = true;
         this.consumedAt = now;
+    }
+
+    public void revoke(LocalDateTime now) {
+        if (this.consumed) {
+            throw new IllegalStateException("Invitation already consumed");
+        }
+        if (this.revoked) {
+            return;
+        }
+        this.revoked = true;
+        this.revokedAt = now;
     }
 }
