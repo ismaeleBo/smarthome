@@ -3,6 +3,8 @@ package com.ismaelebonaventura.auth_service.controller;
 import com.ismaelebonaventura.auth_service.dto.*;
 import com.ismaelebonaventura.auth_service.service.ActivationService;
 import com.ismaelebonaventura.auth_service.service.AuthService;
+import com.ismaelebonaventura.auth_service.service.MemberInvitationAcceptanceService;
+import com.ismaelebonaventura.auth_service.service.MemberRegistrationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +23,8 @@ public class AuthController {
 
     private final AuthService authService;
     private final ActivationService activationService;
+    private final MemberRegistrationService memberRegistrationService;
+    private final MemberInvitationAcceptanceService memberInvitationAcceptanceService;
 
     @PostMapping("/login")
     public ResponseEntity<TokenResponse> login(@Valid @RequestBody LoginRequest request) {
@@ -56,15 +60,19 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/activate-member")
-    public ResponseEntity<Void> activateMember(@RequestBody ActivateMemberRequest request) {
-        activationService.activateMember(
-                request.token(),
-                request.password(),
-                request.firstName(),
-                request.lastName(),
-                request.dateOfBirth()
-        );
+    @PostMapping("/register-member")
+    public ResponseEntity<Void> registerMember(@Valid @RequestBody RegisterMemberRequest request) {
+        memberRegistrationService.registerMember(request);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/accept")
+    public ResponseEntity<Void> accept(@RequestBody AcceptInvitationRequest req) {
+        UUID userId = (UUID) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        memberInvitationAcceptanceService.acceptInvitation(userId, req.token());
+        return ResponseEntity.noContent().build();
+    }
+
+    public record AcceptInvitationRequest(String token) {
     }
 }

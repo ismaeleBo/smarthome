@@ -3,8 +3,7 @@ package com.ismaelebonaventura.home_service.service;
 import com.ismaelebonaventura.home_service.aop.Audited;
 import com.ismaelebonaventura.home_service.exception.ConflictException;
 import com.ismaelebonaventura.home_service.exception.ForbiddenOperationException;
-import com.ismaelebonaventura.home_service.exception.NotFoundException;
-import com.ismaelebonaventura.home_service.messaging.NotificationPublisher;
+import com.ismaelebonaventura.home_service.messaging.InvitationEventPublisher;
 import com.ismaelebonaventura.home_service.model.*;
 import com.ismaelebonaventura.home_service.repository.HomeMemberRepository;
 import com.ismaelebonaventura.home_service.repository.HomeRepository;
@@ -25,7 +24,7 @@ public class InvitationService {
     private final HomeRepository homeRepository;
     private final InvitationRepository invitationRepository;
     private final HomeMemberRepository homeMemberRepository;
-    private final NotificationPublisher notificationPublisher;
+    private final InvitationEventPublisher eventPublisher;
 
     private final SecureRandom secureRandom = new SecureRandom();
 
@@ -33,33 +32,29 @@ public class InvitationService {
     @Transactional
     public LocalDateTime createMemberInvitation(UUID headUserId, Integer homeId, String email) {
 
-        if (headUserId == null) {
-            throw new IllegalArgumentException("headUserId is required");
-        }
-        if (homeId == null) {
-            throw new IllegalArgumentException("homeId is required");
-        }
-        if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException("Email is required");
-        }
+        if (headUserId == null) throw new IllegalArgumentException("headUserId is required");
+        if (homeId == null) throw new IllegalArgumentException("homeId is required");
+        if (email == null || email.isBlank()) throw new IllegalArgumentException("email is required");
 
         String normalizedEmail = email.trim().toLowerCase();
 
         Home home = homeRepository.findByHomeId(homeId)
-                .orElseThrow(() -> new NotFoundException("Home not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Home not found"));
 
         if (home.getHeadUserId() == null || !home.getHeadUserId().equals(headUserId)) {
             throw new ForbiddenOperationException("Head is not assigned to this Home");
         }
 
         if (home.getStatus() != HomeStatus.CONFIGURED) {
-            throw new ConflictException("Home must be CONFIGURED to create invitations");
+            throw new IllegalStateException("Home must be CONFIGURED to create invitations");
         }
 
         LocalDateTime now = LocalDateTime.now();
 
         boolean alreadyActive = invitationRepository
-                .existsByHomeIdAndEmailAndConsumedFalseAndExpiresAtAfter(homeId, normalizedEmail, now);
+                .existsByHomeIdAndEmailAndConsumedFalseAndRevokedFalseAndExpiresAtAfter(
+                        homeId, normalizedEmail, now
+                );
 
         if (alreadyActive) {
             throw new ConflictException("An active invitation already exists for this email");
@@ -71,7 +66,7 @@ public class InvitationService {
         Invitation invitation = new Invitation(token, homeId, normalizedEmail, expiresAt);
         invitationRepository.save(invitation);
 
-        notificationPublisher.publishMemberInvitationEmail(normalizedEmail, token, expiresAt);
+        eventPublisher.publishInvitationCreated(token, normalizedEmail, homeId, expiresAt);
 
         return expiresAt;
     }
@@ -79,13 +74,12 @@ public class InvitationService {
     @Transactional(readOnly = true)
     public InvitationStatus getInvitationStatus(String token) {
 
-        if (token == null || token.isBlank()) {
-            return InvitationStatus.NOT_FOUND;
-        }
+        if (token == null || token.isBlank()) return InvitationStatus.NOT_FOUND;
 
         return invitationRepository.findByToken(token.trim())
                 .map(inv -> {
                     LocalDateTime now = LocalDateTime.now();
+                    if (inv.isRevoked()) return InvitationStatus.REVOKED;
                     if (inv.isExpired(now)) return InvitationStatus.EXPIRED;
                     if (inv.isConsumed()) return InvitationStatus.CONSUMED;
                     return InvitationStatus.VALID;
@@ -97,38 +91,54 @@ public class InvitationService {
     @Transactional
     public void consumeInvitationAsMember(String token, UUID memberUserId) {
 
-        if (token == null || token.isBlank()) {
-            throw new IllegalArgumentException("Token is required");
-        }
-        if (memberUserId == null) {
-            throw new IllegalArgumentException("Member userId is required");
-        }
+        if (token == null || token.isBlank()) throw new IllegalArgumentException("token is required");
+        if (memberUserId == null) throw new IllegalArgumentException("memberUserId is required");
 
         Invitation invitation = invitationRepository.findByToken(token.trim())
                 .orElseThrow(() -> new IllegalArgumentException("Invitation not found"));
 
         LocalDateTime now = LocalDateTime.now();
 
-        if (invitation.isExpired(now)) {
-            throw new ConflictException("Invitation expired");
-        }
-        if (invitation.isConsumed()) {
-            throw new ConflictException("Invitation already consumed");
+        if (invitation.isRevoked()) throw new IllegalStateException("Invitation revoked");
+        if (invitation.isExpired(now)) throw new IllegalStateException("Invitation expired");
+        if (invitation.isConsumed()) throw new IllegalStateException("Invitation already consumed");
+
+        Home home = homeRepository.findByHomeId(invitation.getHomeId())
+                .orElseThrow(() -> new IllegalStateException("Home not found"));
+
+        if (home.getStatus() == HomeStatus.DISABLED) {
+            throw new IllegalStateException("Home is disabled");
         }
 
         if (homeMemberRepository.existsByHomeIdAndMemberUserId(invitation.getHomeId(), memberUserId)) {
-            throw new ConflictException("Member already associated to this Home");
-        }
-
-        Home home = homeRepository.findByHomeId(invitation.getHomeId())
-                .orElseThrow(() -> new NotFoundException("Home not found"));
-
-        if (home.getStatus() == HomeStatus.DISABLED) {
-            throw new ConflictException("Home is disabled");
+            throw new IllegalStateException("Member already associated to this Home");
         }
 
         invitation.consume(now);
         homeMemberRepository.save(new HomeMember(invitation.getHomeId(), memberUserId));
+    }
+
+    @Audited("REVOKE_MEMBER_INVITATION")
+    @Transactional
+    public void revokeInvitation(UUID headUserId, String token) {
+
+        if (headUserId == null) throw new IllegalArgumentException("headUserId is required");
+        if (token == null || token.isBlank()) throw new IllegalArgumentException("token is required");
+
+        Invitation invitation = invitationRepository.findByToken(token.trim())
+                .orElseThrow(() -> new IllegalArgumentException("Invitation not found"));
+
+        Home home = homeRepository.findByHomeId(invitation.getHomeId())
+                .orElseThrow(() -> new IllegalStateException("Home not found"));
+
+        if (home.getHeadUserId() == null || !home.getHeadUserId().equals(headUserId)) {
+            throw new ForbiddenOperationException("Head is not assigned to this Home");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        invitation.revoke(now);
+
+        eventPublisher.publishInvitationRevoked(invitation.getToken());
     }
 
     private String generateToken() {

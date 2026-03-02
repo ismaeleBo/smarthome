@@ -45,15 +45,6 @@ public class JwtService {
         return verifier.verify(token);
     }
 
-    public boolean isValid(String token) {
-        try {
-            verifier.verify(token);
-            return true;
-        } catch (JWTVerificationException ex) {
-            return false;
-        }
-    }
-
     public UUID extractUserId(DecodedJWT jwt) {
         return UUID.fromString(jwt.getSubject());
     }

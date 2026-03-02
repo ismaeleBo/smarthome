@@ -93,9 +93,9 @@ public class HomeService {
             throw new ConflictException("Home must be CONFIGURED to assign a Head");
         }
 
-        if (home.getHeadUserId() != null) {
-            throw new ConflictException("Home already has a Head assigned");
-        }
+        // if (home.getHeadUserId() != null) {
+        //    throw new ConflictException("Home already has a Head assigned");
+        // }
 
         home.setHeadUserId(headUserId);
     }
