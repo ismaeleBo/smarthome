@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,6 +35,18 @@ public class AuthController {
         return ResponseEntity.ok(
                 new TokenResponse(token, "Bearer")
         );
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserSummaryResponse> getCurrentUser() {
+        UUID userId = (UUID) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+        
+        UserSummaryResponse user = authService.getUser(userId);
+
+        return ResponseEntity.ok(user);
     }
 
     @PostMapping("/change-password")

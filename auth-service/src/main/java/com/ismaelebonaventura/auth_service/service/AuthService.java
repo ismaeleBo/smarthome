@@ -2,8 +2,11 @@ package com.ismaelebonaventura.auth_service.service;
 
 
 import com.ismaelebonaventura.auth_service.aop.Audited;
+import com.ismaelebonaventura.auth_service.dto.UserSummaryResponse;
 import com.ismaelebonaventura.auth_service.exception.AuthenticationFailedException;
+import com.ismaelebonaventura.auth_service.exception.NotFoundException;
 import com.ismaelebonaventura.auth_service.exception.PasswordChangeNotAllowedException;
+import com.ismaelebonaventura.auth_service.mapper.UserMapper;
 import com.ismaelebonaventura.auth_service.model.User;
 import com.ismaelebonaventura.auth_service.model.UserStatus;
 import com.ismaelebonaventura.auth_service.repository.UserRepository;
@@ -20,6 +23,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordService passwordService;
     private final JwtService jwtService;
+    private final UserMapper userMapper;
 
     @Transactional(readOnly = true)
     @Audited(action = "LOGIN")
@@ -56,4 +60,10 @@ public class AuthService {
         user.setPasswordHash(newHash);
         userRepository.save(user);
     }
+
+    public UserSummaryResponse getUser(UUID userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));;
+        
+        return userMapper.toSummary(user);
+    } 
 }
