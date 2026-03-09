@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 
@@ -10,8 +9,9 @@
 
 	import type { RegisterMemberFormData } from '$lib/components/auth/RegisterMemberForm.svelte';
 	import RegisterMemberForm from '$lib/components/auth/RegisterMemberForm.svelte';
+	import { page } from '$app/state';
 
-	let token: string | null = null;
+	let token: string | null = $state(null);
 
 	let checking = $state(true);
 	let tokenError: string | null = $state(null);
@@ -41,7 +41,7 @@
 	onMount(async () => {
 		await session.bootstrap();
 
-		token = $page.url.searchParams.get('token');
+		token = page.url.searchParams.get('token');
 		if (!token) {
 			tokenError = 'Missing activation token';
 			checking = false;
@@ -196,21 +196,35 @@
 						You are logged in as {session.state.user.role}. Only a MEMBER user can accept this
 						invitation directly. Log out and register, or log in with a MEMBER account.
 					</div>
+					<button class="mt-2 rounded-xl border px-3 py-2 text-sm" onclick={() => session.logout()}>
+						Logout
+					</button>
 				</section>
 			{/if}
 		{:else}
-			<RegisterMemberForm
-				loading={registerLoading}
-				error={registerError}
-				success={registerSuccess}
-				bind:email
-				bind:firstName
-				bind:lastName
-				bind:dateOfBirth
-				bind:password
-				bind:confirmPassword
-				onSubmit={handleRegisterSubmit}
-			/>
+			<div class="space-y-4">
+				<RegisterMemberForm
+					loading={registerLoading}
+					error={registerError}
+					success={registerSuccess}
+					bind:email
+					bind:firstName
+					bind:lastName
+					bind:dateOfBirth
+					bind:password
+					bind:confirmPassword
+					onSubmit={handleRegisterSubmit}
+				/>
+				<section class="rounded-2xl border bg-white p-6">
+					<p class="text-sm opacity-70">Do you have already an account?</p>
+					<a
+						class="mt-3 inline-block rounded-xl border px-4 py-2 text-sm"
+						href={`/login?redirect=${encodeURIComponent(`/invitation?token=${token}`)}`}
+					>
+						Log in to accept the invitation
+					</a>
+				</section>
+			</div>
 		{/if}
 	</div>
 </div>

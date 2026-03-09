@@ -114,7 +114,7 @@ export function createSession() {
 		}
 	}
 
-	async function login(email: string, password: string) {
+	async function login(email: string, password: string, redirectTo?: string) {
 		const tok = await AuthApi.login({ email, password });
 		setToken(tok.accessToken);
 
@@ -125,7 +125,7 @@ export function createSession() {
 			throw new Error("Impossibile caricare l'utente autenticato");
 		}
 
-		await goto(roleLanding(state.user.role));
+		await goto(redirectTo || roleLanding(state.user.role));
 	}
 
 	function logout(redirect = true) {
