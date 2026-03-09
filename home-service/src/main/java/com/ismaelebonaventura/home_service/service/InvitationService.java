@@ -6,7 +6,6 @@ import com.ismaelebonaventura.home_service.exception.ConflictException;
 import com.ismaelebonaventura.home_service.exception.ForbiddenOperationException;
 import com.ismaelebonaventura.home_service.messaging.InvitationEventPublisher;
 import com.ismaelebonaventura.home_service.model.*;
-import com.ismaelebonaventura.home_service.repository.HomeMemberRepository;
 import com.ismaelebonaventura.home_service.repository.HomeRepository;
 import com.ismaelebonaventura.home_service.repository.InvitationRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +25,6 @@ public class InvitationService {
 
     private final HomeRepository homeRepository;
     private final InvitationRepository invitationRepository;
-    private final HomeMemberRepository homeMemberRepository;
     private final InvitationEventPublisher eventPublisher;
 
     private final SecureRandom secureRandom = new SecureRandom();
@@ -35,9 +33,12 @@ public class InvitationService {
     @Transactional
     public LocalDateTime createMemberInvitation(UUID headUserId, Integer homeId, String email) {
 
-        if (headUserId == null) throw new IllegalArgumentException("headUserId is required");
-        if (homeId == null) throw new IllegalArgumentException("homeId is required");
-        if (email == null || email.isBlank()) throw new IllegalArgumentException("email is required");
+        if (headUserId == null)
+            throw new IllegalArgumentException("headUserId is required");
+        if (homeId == null)
+            throw new IllegalArgumentException("homeId is required");
+        if (email == null || email.isBlank())
+            throw new IllegalArgumentException("email is required");
 
         String normalizedEmail = email.trim().toLowerCase();
 
@@ -56,8 +57,7 @@ public class InvitationService {
 
         boolean alreadyActive = invitationRepository
                 .existsByHomeIdAndEmailAndConsumedFalseAndRevokedFalseAndExpiresAtAfter(
-                        homeId, normalizedEmail, now
-                );
+                        homeId, normalizedEmail, now);
 
         if (alreadyActive) {
             throw new ConflictException("An active invitation already exists for this email");
@@ -77,50 +77,22 @@ public class InvitationService {
     @Transactional(readOnly = true)
     public InvitationStatus getInvitationStatus(String token) {
 
-        if (token == null || token.isBlank()) return InvitationStatus.NOT_FOUND;
+        if (token == null || token.isBlank())
+            return InvitationStatus.NOT_FOUND;
 
         return invitationRepository.findByToken(token.trim())
                 .map(this::geInvitationStatus)
                 .orElse(InvitationStatus.NOT_FOUND);
     }
 
-    @Audited("CONSUME_MEMBER_INVITATION")
-    @Transactional
-    public void consumeInvitationAsMember(String token, UUID memberUserId) {
-
-        if (token == null || token.isBlank()) throw new IllegalArgumentException("token is required");
-        if (memberUserId == null) throw new IllegalArgumentException("memberUserId is required");
-
-        Invitation invitation = invitationRepository.findByToken(token.trim())
-                .orElseThrow(() -> new IllegalArgumentException("Invitation not found"));
-
-        LocalDateTime now = LocalDateTime.now();
-
-        if (invitation.isRevoked()) throw new IllegalStateException("Invitation revoked");
-        if (invitation.isExpired(now)) throw new IllegalStateException("Invitation expired");
-        if (invitation.isConsumed()) throw new IllegalStateException("Invitation already consumed");
-
-        Home home = homeRepository.findByHomeId(invitation.getHomeId())
-                .orElseThrow(() -> new IllegalStateException("Home not found"));
-
-        if (home.getStatus() == HomeStatus.DISABLED) {
-            throw new IllegalStateException("Home is disabled");
-        }
-
-        if (homeMemberRepository.existsByHomeIdAndMemberUserId(invitation.getHomeId(), memberUserId)) {
-            throw new IllegalStateException("Member already associated to this Home");
-        }
-
-        invitation.consume(now);
-        homeMemberRepository.save(new HomeMember(invitation.getHomeId(), memberUserId));
-    }
-
     @Audited("REVOKE_MEMBER_INVITATION")
     @Transactional
     public void revokeInvitation(UUID headUserId, String token) {
 
-        if (headUserId == null) throw new IllegalArgumentException("headUserId is required");
-        if (token == null || token.isBlank()) throw new IllegalArgumentException("token is required");
+        if (headUserId == null)
+            throw new IllegalArgumentException("headUserId is required");
+        if (token == null || token.isBlank())
+            throw new IllegalArgumentException("token is required");
 
         Invitation invitation = invitationRepository.findByToken(token.trim())
                 .orElseThrow(() -> new IllegalArgumentException("Invitation not found"));
@@ -139,8 +111,10 @@ public class InvitationService {
     }
 
     public List<InvitationResponse> getInvitationsForHome(Integer homeId, UUID headUserId) {
-        if (homeId == null) throw new IllegalArgumentException("homeId is required");
-        if(headUserId == null) throw new IllegalArgumentException("headUserId is required");
+        if (homeId == null)
+            throw new IllegalArgumentException("homeId is required");
+        if (headUserId == null)
+            throw new IllegalArgumentException("headUserId is required");
 
         Home home = homeRepository.findByHomeId(homeId)
                 .orElseThrow(() -> new IllegalStateException("Home not found"));
@@ -159,11 +133,15 @@ public class InvitationService {
     }
 
     private InvitationStatus geInvitationStatus(Invitation invitation) {
-        if(invitation == null) return InvitationStatus.NOT_FOUND;
+        if (invitation == null)
+            return InvitationStatus.NOT_FOUND;
         LocalDateTime now = LocalDateTime.now();
-        if (invitation.isRevoked()) return InvitationStatus.REVOKED;
-        if (invitation.isExpired(now)) return InvitationStatus.EXPIRED;
-        if (invitation.isConsumed()) return InvitationStatus.CONSUMED;
+        if (invitation.isRevoked())
+            return InvitationStatus.REVOKED;
+        if (invitation.isExpired(now))
+            return InvitationStatus.EXPIRED;
+        if (invitation.isConsumed())
+            return InvitationStatus.CONSUMED;
         return InvitationStatus.VALID;
     }
 
@@ -172,7 +150,6 @@ public class InvitationService {
                 invitation.getToken(),
                 invitation.getEmail(),
                 invitation.getExpiresAt(),
-                geInvitationStatus(invitation)
-        );
+                geInvitationStatus(invitation));
     }
 }

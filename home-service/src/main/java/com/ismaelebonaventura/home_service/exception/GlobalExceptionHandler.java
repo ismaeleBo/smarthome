@@ -57,12 +57,6 @@ public class GlobalExceptionHandler {
                 .body(ApiError.of(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal server error"));
     }
 
-    @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<ApiError> handleNotFound(NotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ApiError.of(HttpStatus.NOT_FOUND.value(), ex.getMessage()));
-    }
-
     public record ApiError(int status, String message, Instant timestamp) {
         public static ApiError of(int status, String message) {
             return new ApiError(status, message, Instant.now());

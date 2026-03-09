@@ -7,8 +7,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitConfig {
 
-    public static final String EVENTS_EXCHANGE = "smarthome.events";
-
     public static final String RK_MEMBER_REGISTERED = "auth.member.registered";
     public static final String RK_MEMBER_INVITATION_ACCEPTED = "auth.member.invitation.accepted";
 
@@ -17,7 +15,7 @@ public class RabbitConfig {
 
     @Bean
     public TopicExchange eventsExchange() {
-        return new TopicExchange(EVENTS_EXCHANGE, true, false);
+        return new TopicExchange(RabbitConstants.EVENTS_EXCHANGE, true, false);
     }
 
     @Bean
