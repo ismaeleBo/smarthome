@@ -1,6 +1,7 @@
 package com.ismaelebonaventura.home_service.service;
 
 import com.ismaelebonaventura.home_service.aop.Audited;
+import com.ismaelebonaventura.home_service.dto.InvitationResponse;
 import com.ismaelebonaventura.home_service.exception.ConflictException;
 import com.ismaelebonaventura.home_service.exception.ForbiddenOperationException;
 import com.ismaelebonaventura.home_service.messaging.InvitationEventPublisher;
@@ -15,7 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -77,13 +80,7 @@ public class InvitationService {
         if (token == null || token.isBlank()) return InvitationStatus.NOT_FOUND;
 
         return invitationRepository.findByToken(token.trim())
-                .map(inv -> {
-                    LocalDateTime now = LocalDateTime.now();
-                    if (inv.isRevoked()) return InvitationStatus.REVOKED;
-                    if (inv.isExpired(now)) return InvitationStatus.EXPIRED;
-                    if (inv.isConsumed()) return InvitationStatus.CONSUMED;
-                    return InvitationStatus.VALID;
-                })
+                .map(this::geInvitationStatus)
                 .orElse(InvitationStatus.NOT_FOUND);
     }
 
@@ -141,9 +138,41 @@ public class InvitationService {
         eventPublisher.publishInvitationRevoked(invitation.getToken());
     }
 
+    public List<InvitationResponse> getInvitationsForHome(Integer homeId, UUID headUserId) {
+        if (homeId == null) throw new IllegalArgumentException("homeId is required");
+        if(headUserId == null) throw new IllegalArgumentException("headUserId is required");
+
+        Home home = homeRepository.findByHomeId(homeId)
+                .orElseThrow(() -> new IllegalStateException("Home not found"));
+
+        if (home.getHeadUserId() == null || !home.getHeadUserId().equals(headUserId)) {
+            throw new ForbiddenOperationException("Head is not assigned to this Home");
+        }
+
+        return invitationRepository.findByHomeId(homeId).stream().map(this::toResponse).collect(Collectors.toList());
+    }
+
     private String generateToken() {
         byte[] bytes = new byte[32];
         secureRandom.nextBytes(bytes);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+    }
+
+    private InvitationStatus geInvitationStatus(Invitation invitation) {
+        if(invitation == null) return InvitationStatus.NOT_FOUND;
+        LocalDateTime now = LocalDateTime.now();
+        if (invitation.isRevoked()) return InvitationStatus.REVOKED;
+        if (invitation.isExpired(now)) return InvitationStatus.EXPIRED;
+        if (invitation.isConsumed()) return InvitationStatus.CONSUMED;
+        return InvitationStatus.VALID;
+    }
+
+    private InvitationResponse toResponse(Invitation invitation) {
+        return new InvitationResponse(
+                invitation.getToken(),
+                invitation.getEmail(),
+                invitation.getExpiresAt(),
+                geInvitationStatus(invitation)
+        );
     }
 }

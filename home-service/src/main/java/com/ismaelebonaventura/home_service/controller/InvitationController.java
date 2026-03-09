@@ -27,7 +27,8 @@ public class InvitationController {
     @PostMapping("/{token}/consume")
     public ResponseEntity<Void> consume(@PathVariable String token) {
 
-        UUID memberUserId = (UUID) Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication()).getPrincipal();
+        UUID memberUserId = (UUID) Objects.requireNonNull(SecurityContextHolder.getContext().getAuthentication())
+                .getPrincipal();
         invitationService.consumeInvitationAsMember(token, memberUserId);
 
         return ResponseEntity.ok().build();
