@@ -6,6 +6,9 @@ import com.ismaelebonaventura.home_service.dto.ConfigureHomeRequest;
 import com.ismaelebonaventura.home_service.service.AnalystAccessService;
 import com.ismaelebonaventura.home_service.service.HomeService;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -58,10 +61,16 @@ public class HomeAdminController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/analysts/assign")
+    @PutMapping("/analysts/assign")
     public ResponseEntity<Void> assignAnalystHomes(@RequestBody AssignAnalystHomesRequest request) {
 
         analystAccessService.assignHomes(request.analystUserId(), request.homeIds());
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/analysts/{analystUserId}/homes")
+    public ResponseEntity<List<Integer>> getAssignedHomes(@PathVariable String analystUserId) {
+        List<Integer> homeIds = analystAccessService.getAssignedHomeIds(java.util.UUID.fromString(analystUserId));
+        return ResponseEntity.ok(homeIds);
     }
 }

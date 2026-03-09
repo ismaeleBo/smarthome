@@ -26,13 +26,13 @@ public class AnalystAccessService {
         if (analystUserId == null) {
             throw new IllegalArgumentException("analystUserId is required");
         }
-        if (homeIds == null || homeIds.isEmpty()) {
+        if (homeIds == null) {
             throw new IllegalArgumentException("homeIds is required");
         }
 
-        var uniqueHomeIds = new HashSet<>(homeIds);
+        var newHomeIds = new HashSet<>(homeIds);
 
-        for (Integer homeId : uniqueHomeIds) {
+        for (Integer homeId : newHomeIds) {
             if (homeId == null) {
                 throw new IllegalArgumentException("homeId cannot be null");
             }
@@ -42,10 +42,30 @@ public class AnalystAccessService {
             }
         }
 
-        for (Integer homeId : uniqueHomeIds) {
-            if (!analystHomeRepository.existsByAnalystUserIdAndHomeId(analystUserId, homeId)) {
-                analystHomeRepository.save(new AnalystHome(analystUserId, homeId));
-            }
+        var currentAssignments = analystHomeRepository.findByAnalystUserId(analystUserId);
+        var currentHomeIds = currentAssignments.stream()
+                .map(AnalystHome::getHomeId)
+                .collect(java.util.stream.Collectors.toSet());
+
+        var homeIdsToAdd = new HashSet<>(newHomeIds);
+        homeIdsToAdd.removeAll(currentHomeIds);
+
+        var homeIdsToRemove = new HashSet<>(currentHomeIds);
+        homeIdsToRemove.removeAll(newHomeIds);
+
+        for (Integer homeId : homeIdsToAdd) {
+            analystHomeRepository.save(new AnalystHome(analystUserId, homeId));
         }
+
+        if (!homeIdsToRemove.isEmpty()) {
+            analystHomeRepository.deleteByAnalystUserIdAndHomeIdIn(analystUserId, homeIdsToRemove);
+        }
+    }
+
+    public List<Integer> getAssignedHomeIds(UUID analystUserId) {
+        if (analystUserId == null) {
+            throw new IllegalArgumentException("analystUserId is required");
+        }
+        return analystHomeRepository.findHomeIdsByAnalystUserId(analystUserId);
     }
 }
