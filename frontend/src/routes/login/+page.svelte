@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { session } from '$lib/stores/session.svelte';
 	import { HttpError } from '$lib/api/http';
+	import { page } from '$app/state';
 
 	let email = $state('');
 	let password = $state('');
@@ -12,12 +13,11 @@
 		loading = true;
 		errorMsg = null;
 		try {
-			await session.login(email.trim(), password);
+			const redirectTo = page.url.searchParams.get('redirect') ?? undefined;
+			await session.login(email.trim(), password, redirectTo);
 		} catch (e) {
-			console.log(e, 'errr');
-
 			if (e instanceof HttpError) errorMsg = e.apiError?.message ?? e.message;
-			else errorMsg = 'Unexpected error occurred.';
+			else errorMsg = 'Errore imprevisto';
 		} finally {
 			loading = false;
 		}
