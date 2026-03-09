@@ -13,13 +13,10 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(
-        name = "invitations",
-        indexes = {
-                @Index(name = "idx_invitations_token", columnList = "token", unique = true),
-                @Index(name = "idx_invitations_home_email", columnList = "home_id,email")
-        }
-)
+@Table(name = "invitations", indexes = {
+        @Index(name = "idx_invitations_token", columnList = "token", unique = true),
+        @Index(name = "idx_invitations_home_email", columnList = "home_id,email")
+})
 public class Invitation {
 
     @Id
@@ -58,7 +55,7 @@ public class Invitation {
         this.id = UUID.randomUUID();
         this.token = token;
         this.homeId = homeId;
-        this.email = email.trim().toLowerCase();;
+        this.email = email.trim().toLowerCase();
         this.expiresAt = expiresAt;
         this.consumed = false;
     }
