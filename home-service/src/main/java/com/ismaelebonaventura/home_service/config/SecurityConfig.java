@@ -25,12 +25,12 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/invitations/*").permitAll()
+                        .requestMatchers("/internal/**").permitAll()
                         .requestMatchers("/head/**").hasRole("HEAD")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/homes/**").authenticated()
                         .requestMatchers("/me/**").authenticated()
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((request, response, authException) -> {
@@ -38,8 +38,7 @@ public class SecurityConfig {
                         })
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
                             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                        })
-                );
+                        }));
 
         return http.build();
     }
