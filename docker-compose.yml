@@ -58,6 +58,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       SECURITY_JWT_ISSUER: ${JWT_ISSUER}
       SECURITY_JWT_SECRET: ${JWT_SECRET}
+      CLIENTS_HOME_SERVICE_BASE_URL: http://home-service:8082/home
     depends_on:
       postgres:
         condition: service_healthy
