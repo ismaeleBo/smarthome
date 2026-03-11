@@ -38,10 +38,10 @@ public class GlobalExceptionHandler {
                 .body(ApiError.of(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal server error"));
     }
 
-    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
-    public ResponseEntity<ApiError> handleNotFound(Exception ex) {
-    return ResponseEntity.status(HttpStatus.NOT_FOUND)
-        .body(ApiError.of(404, "Not Found"));
+    @ExceptionHandler(ForbiddenOperationException.class)
+    public ResponseEntity<ApiError> handleForbidden(ForbiddenOperationException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ApiError.of(403, ex.getMessage()));
     }
 
     public record ApiError(int status, String message, Instant timestamp) {

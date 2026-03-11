@@ -25,3 +25,7 @@ springdoc:
     enabled: true
   swagger-ui:
     enabled: true
+
+clients:
+  home-service:
+    base-url: ${CLIENTS_HOME_SERVICE_BASE_URL}

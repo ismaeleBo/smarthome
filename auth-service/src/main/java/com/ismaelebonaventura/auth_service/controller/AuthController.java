@@ -33,8 +33,7 @@ public class AuthController {
         String token = authService.login(request.email(), request.password());
 
         return ResponseEntity.ok(
-                new TokenResponse(token, "Bearer")
-        );
+                new TokenResponse(token, "Bearer"));
     }
 
     @GetMapping("/me")
@@ -43,7 +42,7 @@ public class AuthController {
                 .getContext()
                 .getAuthentication()
                 .getPrincipal();
-        
+
         UserSummaryResponse user = authService.getUser(userId);
 
         return ResponseEntity.ok(user);
@@ -61,8 +60,7 @@ public class AuthController {
         authService.changePassword(
                 userId,
                 request.currentPassword(),
-                request.newPassword()
-        );
+                request.newPassword());
 
         return ResponseEntity.noContent().build();
     }
@@ -84,8 +82,5 @@ public class AuthController {
         UUID userId = (UUID) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         memberInvitationAcceptanceService.acceptInvitation(userId, req.token());
         return ResponseEntity.noContent().build();
-    }
-
-    public record AcceptInvitationRequest(String token) {
     }
 }

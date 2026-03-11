@@ -22,12 +22,14 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/actuator/health").permitAll()
-                    .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                    .requestMatchers("/admin/import").hasRole("ADMIN")
-                    .requestMatchers("/**").hasRole("ADMIN")
-                    .anyRequest().authenticated()
-                )
+                        .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/internal/**").permitAll()
+                        .requestMatchers("/admin/import").hasRole("ADMIN")
+                        .requestMatchers("/homes").hasRole("ADMIN")
+                        .requestMatchers("/homes/*/coverage")
+                        .hasAnyRole("ADMIN", "HEAD", "ANALYST", "MEMBER")
+                        .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((request, response, authException) -> {
@@ -35,8 +37,7 @@ public class SecurityConfig {
                         })
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
                             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                        })
-                );
+                        }));
 
         return http.build();
     }
