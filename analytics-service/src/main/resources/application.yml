@@ -1,0 +1,43 @@
+server:
+  port: 8083
+  servlet:
+    context-path: /analytics
+spring:
+  application:
+    name: analytics-service
+security:
+  jwt:
+    issuer: ${SECURITY_JWT_ISSUER}
+    secret: ${SECURITY_JWT_SECRET}
+    expires-minutes: ${SECURITY_JWT_EXPIRES_MINUTES:60}
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      homeService:
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+      measurementsService:
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+  retry:
+    instances:
+      homeService:
+        maxAttempts: 3
+        waitDuration: 300ms
+      measurementsService:
+        maxAttempts: 3
+        waitDuration: 300ms
+clients:
+  home-service:
+    base-url: ${CLIENTS_HOME_SERVICE_BASE_URL}
+  measurements-service:
+    base-url: ${CLIENTS_MEASUREMENTS_SERVICE_BASE_URL}
