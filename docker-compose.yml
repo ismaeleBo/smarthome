@@ -64,8 +64,27 @@ services:
         condition: service_healthy
       auth-service:
         condition: service_started
+      home-service:
+        condition: service_started
     ports:
       - "8081:8081"
+
+  analytics-service:
+    build: ./analytics-service
+    container_name: analytics-service
+    platform: linux/amd64
+    environment:
+      SECURITY_JWT_ISSUER: ${JWT_ISSUER}
+      SECURITY_JWT_SECRET: ${JWT_SECRET}
+      CLIENTS_HOME_SERVICE_BASE_URL: http://home-service:8082/home
+      CLIENTS_MEASUREMENTS_SERVICE_BASE_URL: http://measurements-service:8081/measurements
+    depends_on:
+      measurements-service:
+        condition: service_started
+      home-service:
+        condition: service_started
+    ports:
+      - "8083:8083"
 
   home-service:
     build: ./home-service
@@ -82,8 +101,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      measurements-service:
-        condition: service_started
       auth-service:
         condition: service_started
     ports:
