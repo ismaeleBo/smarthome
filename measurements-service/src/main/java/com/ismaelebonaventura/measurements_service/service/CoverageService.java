@@ -9,6 +9,7 @@ import com.ismaelebonaventura.measurements_service.client.HomeAuthorizationClien
 import com.ismaelebonaventura.measurements_service.dto.CoverageResponse;
 import com.ismaelebonaventura.measurements_service.exception.ForbiddenOperationException;
 import com.ismaelebonaventura.measurements_service.repository.MeasurementRepository;
+import com.ismaelebonaventura.measurements_service.security.Roles;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,7 +30,7 @@ public class CoverageService {
             throw new IllegalArgumentException("userId is required");
         }
 
-        boolean isAdmin = "ADMIN".equals(role);
+        boolean isAdmin = Roles.ADMIN.equals(role);
 
         if (!isAdmin && !homeAuthorizationClient.canAccessHome(userId, homeId)) {
             throw new ForbiddenOperationException("User is not authorized for this home");

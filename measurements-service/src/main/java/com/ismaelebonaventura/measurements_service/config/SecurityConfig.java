@@ -27,6 +27,8 @@ public class SecurityConfig {
                         .requestMatchers("/internal/**").permitAll()
                         .requestMatchers("/admin/import").hasRole("ADMIN")
                         .requestMatchers("/homes").hasRole("ADMIN")
+                        .requestMatchers("/analyst/homes/coverage").hasRole("ANALYST")
+                        .requestMatchers("/analyst/homes/devices").hasRole("ANALYST")
                         .requestMatchers("/homes/*/coverage")
                         .hasAnyRole("ADMIN", "HEAD", "ANALYST", "MEMBER")
                         .anyRequest().authenticated())
