@@ -44,6 +44,12 @@ public class GlobalExceptionHandler {
                 .body(ApiError.of(403, ex.getMessage()));
     }
 
+    @ExceptionHandler(IncompatibleCoverageException.class)
+    public ResponseEntity<ApiError> handleIncompatibleCoverage(IncompatibleCoverageException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiError.of(409, ex.getMessage()));
+    }
+
     public record ApiError(int status, String message, Instant timestamp) {
         public static ApiError of(int status, String message) {
             return new ApiError(status, message, Instant.now());
