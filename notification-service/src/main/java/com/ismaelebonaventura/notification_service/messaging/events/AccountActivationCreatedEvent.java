@@ -1,4 +1,4 @@
-package com.ismaelebonaventura.notification_service.messaging;
+package com.ismaelebonaventura.notification_service.messaging.events;
 
 import java.time.Instant;
 import java.util.UUID;
