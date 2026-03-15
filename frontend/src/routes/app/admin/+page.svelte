@@ -280,20 +280,6 @@
 </script>
 
 <div class="space-y-6 p-6">
-	<div class="flex items-center justify-between">
-		<div>
-			<h1 class="text-2xl font-semibold">Dashboard Admin</h1>
-			<p class="text-sm opacity-70">
-				{session.state.user?.firstName}
-				{session.state.user?.lastName} - {session.state.user?.email}
-			</p>
-		</div>
-
-		<button class="rounded-xl border px-3 py-2 text-sm" onclick={() => session.logout()}>
-			Logout
-		</button>
-	</div>
-
 	{#if loading}
 		<div class="rounded-2xl border bg-white p-4 text-sm opacity-70">
 			Loading administrative data...
@@ -442,92 +428,7 @@
 			</section>
 		</div>
 
-		<div class="grid gap-6 xl:grid-cols-[2fr,1fr]">
-			<section class="space-y-4 rounded-2xl border bg-white p-5">
-				<div>
-					<h2 class="text-lg font-semibold">Configured Homes</h2>
-					<p class="text-sm opacity-70">
-						List of currently configured homes with related information and actions.
-					</p>
-				</div>
-
-				<div class="overflow-x-auto">
-					<table class="w-full text-sm">
-						<thead>
-							<tr class="border-b text-left">
-								<th class="py-2 pr-3">Home</th>
-								<th class="py-2 pr-3">Status</th>
-								<th class="py-2 pr-3">City</th>
-								<th class="py-2 pr-3">Price/kWh</th>
-								<th class="py-2 pr-3">Head</th>
-								<th class="py-2 pr-3">Azioni</th>
-							</tr>
-						</thead>
-						<tbody>
-							{#each configuredHomes as home}
-								<tr class="border-b align-top">
-									<td class="py-3 pr-3 font-medium">#{home.homeId}</td>
-									<td class="py-3 pr-3">{home.status}</td>
-									<td class="py-3 pr-3">{home.city}</td>
-									<td class="py-3 pr-3">{home.pricePerKwh}</td>
-									<td class="py-3 pr-3">
-										<div class="space-y-2">
-											{#if home.headUserId}
-												<div class="text-xs opacity-70">
-													{users.find((u) => u.id === home.headUserId)?.firstName +
-														' ' +
-														users.find((u) => u.id === home.headUserId)?.lastName}
-												</div>
-											{:else}
-												<div class="text-xs opacity-70">No assigned Head</div>
-												<select
-													class="w-full rounded-xl border p-2"
-													bind:value={assignHeadSelections[home.homeId]}
-												>
-													<option value="">Select Head</option>
-													{#each heads as head}
-														<option value={head.id}>
-															{head.firstName}
-															{head.lastName} - {head.email}
-														</option>
-													{/each}
-												</select>
-												<button
-													class="rounded-xl border px-3 py-2 text-xs"
-													onclick={() => submitAssignHead(home.homeId)}
-												>
-													Assign Head
-												</button>
-											{/if}
-										</div>
-									</td>
-									<td class="py-3 pr-3">
-										<div class="flex flex-col gap-2">
-											{#if home.status === 'DISABLED'}
-												<button
-													class="rounded-xl border px-3 py-2 text-xs"
-													onclick={() => reactivateHome(home.homeId)}
-												>
-													Reactivate
-												</button>
-											{:else}
-												<button
-													class="rounded-xl border px-3 py-2 text-xs"
-													onclick={() => disableHome(home.homeId)}
-												>
-													Disable
-												</button>
-											{/if}
-										</div>
-									</td>
-								</tr>
-							{/each}
-						</tbody>
-					</table>
-				</div>
-			</section>
-
-			<!-- ASSIGN ANALYST -->
+		<!-- ASSIGN ANALYST -->
 			<section class="space-y-4 rounded-2xl border bg-white p-5">
 				<div>
 					<h2 class="text-lg font-semibold">Assign Home to Analyst</h2>
@@ -593,6 +494,91 @@
 					{/if}
 				</div>
 			</section>
+
+		<div class="grid gap-6 xl:grid-cols-[2fr,1fr]">
+			<section class="space-y-4 rounded-2xl border bg-white p-5">
+				<div>
+					<h2 class="text-lg font-semibold">Configured Homes</h2>
+					<p class="text-sm opacity-70">
+						List of currently configured homes.
+					</p>
+				</div>
+
+				<div class="overflow-x-auto overflow-y-scroll max-h-96">
+					<table class="w-full text-sm">
+						<thead>
+							<tr class="border-b text-left">
+								<th class="py-2 pr-3">Home</th>
+								<th class="py-2 pr-3">Status</th>
+								<th class="py-2 pr-3">City</th>
+								<th class="py-2 pr-3">Price/kWh</th>
+								<th class="py-2 pr-3">Head</th>
+								<th class="py-2 pr-3">Azioni</th>
+							</tr>
+						</thead>
+						<tbody>
+							{#each configuredHomes as home}
+								<tr class="border-b align-top">
+									<td class="py-3 pr-3 font-medium">#{home.homeId}</td>
+									<td class="py-3 pr-3">{home.status}</td>
+									<td class="py-3 pr-3">{home.city}</td>
+									<td class="py-3 pr-3">{home.pricePerKwh}€</td>
+									<td class="py-3 pr-3">
+										<div class="space-y-2">
+											{#if home.headUserId}
+												<div class="text-xs opacity-70">
+													{users.find((u) => u.id === home.headUserId)?.firstName +
+														' ' +
+														users.find((u) => u.id === home.headUserId)?.lastName}
+												</div>
+											{:else}
+												<div class="text-xs opacity-70">No assigned Head</div>
+												<select
+													class="w-full rounded-xl border p-2"
+													bind:value={assignHeadSelections[home.homeId]}
+												>
+													<option value="">Select Head</option>
+													{#each heads as head}
+														<option value={head.id}>
+															{head.firstName}
+															{head.lastName} - {head.email}
+														</option>
+													{/each}
+												</select>
+												<button
+													class="rounded-xl border px-3 py-2 text-xs"
+													onclick={() => submitAssignHead(home.homeId)}
+												>
+													Assign Head
+												</button>
+											{/if}
+										</div>
+									</td>
+									<td class="py-3 pr-3">
+										<div class="flex flex-col gap-2">
+											{#if home.status === 'DISABLED'}
+												<button
+													class="rounded-xl border px-3 py-2 text-xs"
+													onclick={() => reactivateHome(home.homeId)}
+												>
+													Reactivate
+												</button>
+											{:else}
+												<button
+													class="rounded-xl border px-3 py-2 text-xs"
+													onclick={() => disableHome(home.homeId)}
+												>
+													Disable
+												</button>
+											{/if}
+										</div>
+									</td>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				</div>
+			</section>
 		</div>
 
 		<section class="space-y-4 rounded-2xl border bg-white p-5">
@@ -601,7 +587,7 @@
 				<p class="text-sm opacity-70">Quick view of users present in the system.</p>
 			</div>
 
-			<div class="overflow-x-auto">
+			<div class="overflow-x-auto overflow-y-scroll max-h-96">
 				<table class="w-full text-sm">
 					<thead>
 						<tr class="border-b text-left">

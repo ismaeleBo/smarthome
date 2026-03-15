@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { session } from '$lib/stores/session.svelte';
 	import { page } from '$app/state';
+	import Header from '$lib/components/layout/Header.svelte';
 
 	let { children } = $props();
 
@@ -21,4 +22,13 @@
 	});
 </script>
 
-{@render children()}
+{#if session.state.token && session.state.user}
+	<div class="flex min-h-screen flex-col bg-gray-50/50">
+		<Header />
+		<main class="flex-1">
+			{@render children()}
+		</main>
+	</div>
+{:else}
+	{@render children()}
+{/if}

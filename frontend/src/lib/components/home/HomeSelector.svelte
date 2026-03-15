@@ -26,7 +26,7 @@
 		onchange={handleChange}
 	>
 		{#each homes as h}
-			<option value={h.homeId}>Home #{h.homeId} — {h.status}</option>
+			<option value={h.homeId}>Home #{h.homeId} - {h.status}</option>
 		{/each}
 	</select>
 </div>

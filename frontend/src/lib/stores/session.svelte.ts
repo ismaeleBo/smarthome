@@ -17,7 +17,9 @@ type SessionState = {
 };
 
 function roleLanding(role: Role): string {
-	return role === 'ADMIN' ? '/app/admin' : '/app/home';
+	if (role === 'ADMIN') return '/app/admin';
+	if (role === 'ANALYST') return '/app/analyst';
+	return '/app/home';
 }
 
 export function createSession() {
