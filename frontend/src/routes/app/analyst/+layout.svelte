@@ -1,9 +1,13 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, type Snippet } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { session } from '$lib/stores/session.svelte';
 
-	let { children } = $props();
+	interface Props {
+		children?: Snippet;
+	}
+
+	let { children }: Props = $props();
 
 	let ready = $state(false);
 
@@ -15,13 +19,8 @@
 			return;
 		}
 
-		if (session.state.user.role === 'ANALYST') {
-			await goto('/app/analyst');
-			return;
-		}
-
-		if (session.state.user.role === 'ADMIN') {
-			await goto('/app/admin');
+		if (session.state.user.role !== 'ANALYST') {
+			await goto('/app/home');
 			return;
 		}
 

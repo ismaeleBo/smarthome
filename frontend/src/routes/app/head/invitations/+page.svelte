@@ -152,36 +152,17 @@
 	}
 
 	onMount(reloadPageContext);
+
+	$effect(() => {
+		if (s.selectedHomeId != null) {
+			resetInviteBanner();
+			void reloadPageContext();
+		}
+	});
 </script>
 
 <div class="space-y-6 p-6">
-	<div class="flex items-center justify-between">
-		<div>
-			<h1 class="text-2xl font-semibold">Manage Member Invitations</h1>
-			<p class="text-sm opacity-70">
-				{s.user?.firstName}
-				{s.user?.lastName} - {s.user?.email}
-			</p>
-		</div>
-
-		<div class="flex items-center gap-2">
-			<a href="/app/home" class="rounded-xl border px-3 py-2 text-sm">Back to Home</a>
-			<button class="rounded-xl border px-3 py-2 text-sm" onclick={() => session.logout()}>
-				Logout
-			</button>
-		</div>
-	</div>
-
 	{#if s.homes.length > 0}
-		<section class="rounded-2xl border bg-white p-5">
-			<HomeSelector
-				homes={s.homes}
-				selectedHomeId={s.selectedHomeId}
-				label="Home selezionata"
-				onChange={handleHomeChange}
-			/>
-		</section>
-
 		<HomeDetailsCard loading={detailsLoading} error={detailsError} home={selectedHomeDetails} />
 
 		<div class="grid gap-6 xl:grid-cols-[1fr,1.4fr]">
