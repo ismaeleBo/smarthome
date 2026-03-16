@@ -18,7 +18,7 @@ export const AuthApi = {
 		apiFetch<void>('/auth/change-password', { method: 'POST', token, body }),
 
 	provisionUser: (token: string, body: ProvisionUserRequest) =>
-		apiFetch<ProvisionUserResponse>('/auth/internal/users', { method: 'POST', token, body }),
+		apiFetch<ProvisionUserResponse>('/auth/admin/users/provision', { method: 'POST', token, body }),
 
 	adminUsers: (token: string) => apiFetch<UserSummaryResponse[]>('/auth/admin/users', { token }),
 

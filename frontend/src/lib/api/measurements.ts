@@ -7,7 +7,8 @@ import type {
 } from '$lib/contracts/measurements';
 
 export const MeasurementsApi = {
-	homes: (token: string) => apiFetch<DatasetHomeIdsResponse>('/measurements/homes', { token }),
+	homes: (token: string) =>
+		apiFetch<DatasetHomeIdsResponse>('/measurements/admin/homes', { token }),
 
 	importDataset: (token: string) =>
 		apiFetch<void>('/measurements/admin/import', { method: 'POST', token }),

@@ -53,7 +53,8 @@
 
 		detailsLoading = true;
 		try {
-			selectedHomeDetails = await HomeApi.getHome(s.token, s.selectedHomeId);
+			selectedHomeDetails =
+				(await HomeApi.myHomes(s.token)).find((h) => h.homeId === s.selectedHomeId) ?? null;
 		} catch (error) {
 			detailsError = parseError(error, 'Unable to load home details');
 		} finally {

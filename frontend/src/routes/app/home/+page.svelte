@@ -1,36 +1,36 @@
 <script lang="ts">
-	import { onMount } from "svelte";
-	import { session } from "$lib/stores/session.svelte";
-	import { HomeApi } from "$lib/api/home";
-	import { MeasurementsApi } from "$lib/api/measurements";
-	import { AnalyticsApi } from "$lib/api/analytics";
-	import { HttpError } from "$lib/api/http";
+	import { onMount } from 'svelte';
+	import { session } from '$lib/stores/session.svelte';
+	import { HomeApi } from '$lib/api/home';
+	import { MeasurementsApi } from '$lib/api/measurements';
+	import { AnalyticsApi } from '$lib/api/analytics';
+	import { HttpError } from '$lib/api/http';
 
-	import type { HomeResponse } from "$lib/contracts/home";
-	import type { ApplianceTypeResponse, CoverageResponse } from "$lib/contracts/measurements";
+	import type { HomeResponse } from '$lib/contracts/home';
+	import type { ApplianceTypeResponse, CoverageResponse } from '$lib/contracts/measurements';
 	import type {
 		AverageByPeriodDto,
 		AverageByDeviceDto,
 		HomeDashboardResponse
-	} from "$lib/contracts/analytics";
-	import type { DateTimeRange } from "$lib/utils/datetime";
+	} from '$lib/contracts/analytics';
+	import type { DateTimeRange } from '$lib/utils/datetime';
 
 	import {
 		clampRangeToCoverage,
 		fromCoverageToRange,
-		isRangeInsideCoverage,
-	} from "$lib/utils/datetime";
+		isRangeInsideCoverage
+	} from '$lib/utils/datetime';
 
-	import SingleHomeSelector from "$lib/components/home/SingleHomeSelector.svelte";
-	import HomeDetailsCard from "$lib/components/home/HomeDetailsCard.svelte";
-	import DateTimeRangeFilter from "$lib/components/filters/DateTimeRangeFilter.svelte";
-	import DeviceSelect from "$lib/components/filters/DeviceSelect.svelte";
+	import SingleHomeSelector from '$lib/components/home/SingleHomeSelector.svelte';
+	import HomeDetailsCard from '$lib/components/home/HomeDetailsCard.svelte';
+	import DateTimeRangeFilter from '$lib/components/filters/DateTimeRangeFilter.svelte';
+	import DeviceSelect from '$lib/components/filters/DeviceSelect.svelte';
 
-	import AnalyticsSummaryCards from "$lib/components/analytics/AnalyticsSummaryCards.svelte";
-	import ChartTypeToggle from "$lib/components/analytics/ChartTypeToggle.svelte";
-	import DualMetricChart from "$lib/components/analytics/DualMetricChart.svelte";
-	import TopDevicesTable from "$lib/components/analytics/TopDevicesTable.svelte";
-	import HeatingPeaksTable from "$lib/components/analytics/HeatingPeaksTable.svelte";
+	import AnalyticsSummaryCards from '$lib/components/analytics/AnalyticsSummaryCards.svelte';
+	import ChartTypeToggle from '$lib/components/analytics/ChartTypeToggle.svelte';
+	import DualMetricChart from '$lib/components/analytics/DualMetricChart.svelte';
+	import TopDevicesTable from '$lib/components/analytics/TopDevicesTable.svelte';
+	import HeatingPeaksTable from '$lib/components/analytics/HeatingPeaksTable.svelte';
 
 	const s = session.state;
 
@@ -54,14 +54,14 @@
 	let dashboardError: string | null = $state(null);
 	let dashboard: HomeDashboardResponse | null = $state(null);
 
-	let topHoursMode: "bar" | "line" = $state("bar");
-	let topDaysMode: "bar" | "line" = $state("bar");
-	let avgByHourMode: "bar" | "line" = $state("line");
-	let avgByWeekdayMode: "bar" | "line" = $state("line");
-	let avgByMonthMode: "bar" | "line" = $state("line");
-	let avgByDeviceMode: "bar" | "line" = $state("bar");
+	let topHoursMode: 'bar' | 'line' = $state('bar');
+	let topDaysMode: 'bar' | 'line' = $state('bar');
+	let avgByHourMode: 'bar' | 'line' = $state('line');
+	let avgByWeekdayMode: 'bar' | 'line' = $state('line');
+	let avgByMonthMode: 'bar' | 'line' = $state('line');
+	let avgByDeviceMode: 'bar' | 'line' = $state('bar');
 
-	function parseError(error: unknown, fallback = "Operation failed"): string {
+	function parseError(error: unknown, fallback = 'Operation failed'): string {
 		if (error instanceof HttpError) return error.apiError?.message ?? error.message;
 		if (error instanceof Error) return error.message;
 		return fallback;
@@ -75,9 +75,10 @@
 
 		detailsLoading = true;
 		try {
-			selectedHomeDetails = await HomeApi.getHome(s.token, s.selectedHomeId);
+			selectedHomeDetails =
+				(await HomeApi.myHomes(s.token)).find((h) => h.homeId === s.selectedHomeId) ?? null;
 		} catch (error) {
-			detailsError = parseError(error, "Unable to load home details");
+			detailsError = parseError(error, 'Unable to load home details');
 		} finally {
 			detailsLoading = false;
 		}
@@ -121,7 +122,7 @@
 			devices = devicesRes;
 			ensureSelectedDeviceIsValid();
 		} catch (error) {
-			filtersError = parseError(error, "Unable to load analytics filters");
+			filtersError = parseError(error, 'Unable to load analytics filters');
 		} finally {
 			filtersLoading = false;
 		}
@@ -141,7 +142,7 @@
 				applianceType: selectedDevice
 			});
 		} catch (error) {
-			dashboardError = parseError(error, "Unable to load dashboard");
+			dashboardError = parseError(error, 'Unable to load dashboard');
 		} finally {
 			dashboardLoading = false;
 		}
@@ -155,7 +156,7 @@
 			await loadHomeFilters();
 			await loadDashboard();
 		} catch (error) {
-			pageError = parseError(error, "Unable to load page data");
+			pageError = parseError(error, 'Unable to load page data');
 		}
 	}
 
@@ -200,22 +201,22 @@
 
 		return [
 			{
-				label: "Top hour",
-				value: topHour ? `${topHour.hour}:00` : "-",
+				label: 'Top hour',
+				value: topHour ? `${topHour.hour}:00` : '-',
 				subtitle: topHour
 					? `${topHour.totalConsumptionKwh.toFixed(2)} kWh - ${topHour.estimatedCost.toFixed(2)}€`
 					: undefined
 			},
 			{
-				label: "Top device",
-				value: topDevice ? topDevice.applianceType : "-",
+				label: 'Top device',
+				value: topDevice ? topDevice.applianceType : '-',
 				subtitle: topDevice
 					? `${topDevice.totalConsumptionKwh.toFixed(2)} kWh - ${topDevice.estimatedCost.toFixed(2)}€`
 					: undefined
 			},
 			{
-				label: "Top day",
-				value: topDay ? topDay.day : "-",
+				label: 'Top day',
+				value: topDay ? topDay.day : '-',
 				subtitle: topDay
 					? `${topDay.totalConsumptionKwh.toFixed(2)} kWh - ${topDay.estimatedCost.toFixed(2)}€`
 					: undefined
@@ -253,13 +254,13 @@
 		{:else if coverage && range}
 			<div class="grid gap-4 xl:grid-cols-[1.4fr,0.8fr]">
 				<DateTimeRangeFilter
-					range={range}
+					{range}
 					min={fromCoverageToRange(coverage).from}
 					max={fromCoverageToRange(coverage).to}
 					onChange={handleRangeChange}
 				/>
 
-				<DeviceSelect devices={devices} selectedDevice={selectedDevice} onChange={handleDeviceChange} />
+				<DeviceSelect {devices} {selectedDevice} onChange={handleDeviceChange} />
 			</div>
 		{/if}
 	</section>

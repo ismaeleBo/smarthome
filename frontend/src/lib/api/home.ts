@@ -13,10 +13,10 @@ import type {
 export const HomeApi = {
 	myHomes: (token: string) => apiFetch<HomeResponse[]>('/home/me/homes', { token }),
 
-	allHomes: (token: string) => apiFetch<HomeResponse[]>('/home/homes', { token }),
+	allHomes: (token: string) => apiFetch<HomeResponse[]>('/home/admin/homes', { token }),
 
 	getHome: (token: string, homeId: number) =>
-		apiFetch<HomeResponse>(`/home/homes/${homeId}`, { token }),
+		apiFetch<HomeResponse>(`/home/admin/homes/${homeId}`, { token }),
 
 	configureHome: (token: string, homeId: number, body: ConfigureHomeRequest) =>
 		apiFetch<void>(`/home/admin/homes/${homeId}/configure`, { method: 'POST', token, body }),
