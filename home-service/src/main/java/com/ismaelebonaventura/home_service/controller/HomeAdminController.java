@@ -3,6 +3,7 @@ package com.ismaelebonaventura.home_service.controller;
 import com.ismaelebonaventura.home_service.dto.AssignAnalystHomesRequest;
 import com.ismaelebonaventura.home_service.dto.AssignHeadRequest;
 import com.ismaelebonaventura.home_service.dto.ConfigureHomeRequest;
+import com.ismaelebonaventura.home_service.dto.HomeResponse;
 import com.ismaelebonaventura.home_service.service.AnalystAccessService;
 import com.ismaelebonaventura.home_service.service.HomeService;
 import lombok.RequiredArgsConstructor;
@@ -20,34 +21,40 @@ public class HomeAdminController {
     private final HomeService homeService;
     private final AnalystAccessService analystAccessService;
 
+    @GetMapping
+    public List<HomeResponse> getAllHomes() {
+        return homeService.getAllHomes();
+    }
+
+    @GetMapping("/{homeId}")
+    public HomeResponse getHome(@PathVariable Integer homeId) {
+        return homeService.getHome(homeId);
+    }
+
     @PostMapping("/{homeId}/configure")
     public ResponseEntity<Void> configureHome(
             @PathVariable Integer homeId,
-            @RequestBody ConfigureHomeRequest request
-    ) {
+            @RequestBody ConfigureHomeRequest request) {
         homeService.configureHome(
                 homeId,
                 request.address(),
                 request.streetNumber(),
                 request.city(),
-                request.pricePerKwh()
-        );
+                request.pricePerKwh());
 
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{homeId}/disable")
     public ResponseEntity<Void> disableHome(
-            @PathVariable Integer homeId
-    ) {
+            @PathVariable Integer homeId) {
         homeService.disableHome(homeId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{homeId}/reactivate")
     public ResponseEntity<Void> reactivateHome(
-            @PathVariable Integer homeId
-    ) {
+            @PathVariable Integer homeId) {
         homeService.reactivateHome(homeId);
         return ResponseEntity.ok().build();
     }
@@ -55,8 +62,7 @@ public class HomeAdminController {
     @PostMapping("/{homeId}/head")
     public ResponseEntity<Void> assignHead(
             @PathVariable Integer homeId,
-            @RequestBody AssignHeadRequest request
-    ) {
+            @RequestBody AssignHeadRequest request) {
         homeService.assignHead(homeId, request.headUserId());
         return ResponseEntity.ok().build();
     }
