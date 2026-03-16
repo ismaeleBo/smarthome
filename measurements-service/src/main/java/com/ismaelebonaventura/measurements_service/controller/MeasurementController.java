@@ -2,7 +2,6 @@ package com.ismaelebonaventura.measurements_service.controller;
 
 import com.ismaelebonaventura.measurements_service.dto.CoverageResponse;
 import com.ismaelebonaventura.measurements_service.dto.DeviceResponse;
-import com.ismaelebonaventura.measurements_service.repository.MeasurementRepository;
 import com.ismaelebonaventura.measurements_service.service.CoverageService;
 import com.ismaelebonaventura.measurements_service.service.MeasurementQueryService;
 
@@ -20,14 +19,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class MeasurementController {
 
-    private final MeasurementRepository measurementRepository;
     private final MeasurementQueryService measurementQueryService;
     private final CoverageService coverageService;
-
-    @GetMapping("/homes")
-    public List<Integer> getHomeIds() {
-        return measurementRepository.findDistinctHomeIds();
-    }
 
     @GetMapping("/homes/{homeId}/coverage")
     public CoverageResponse getCoverage(@PathVariable Integer homeId) {

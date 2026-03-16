@@ -25,7 +25,7 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/internal/**").permitAll()
-                        .requestMatchers("/admin/import").hasRole("ADMIN")
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/homes").hasRole("ADMIN")
                         .requestMatchers("/analyst/homes/coverage").hasRole("ANALYST")
                         .requestMatchers("/analyst/homes/devices").hasRole("ANALYST")
