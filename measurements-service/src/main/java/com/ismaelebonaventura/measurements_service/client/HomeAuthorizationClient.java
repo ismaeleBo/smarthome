@@ -6,6 +6,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import com.ismaelebonaventura.measurements_service.dto.RemoteUserHomesResponse;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
+
 import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
@@ -17,6 +20,8 @@ public class HomeAuthorizationClient {
 
     private final WebClient homeWebClient;
 
+    @Retry(name = "homeService")
+    @CircuitBreaker(name = "homeService")
     public RemoteUserHomesResponse getUserHomes(UUID userId) {
 
         if (userId == null) {
