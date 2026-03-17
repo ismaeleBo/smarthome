@@ -5,12 +5,14 @@ import com.ismaelebonaventura.analytics_service.dto.AverageByPeriodDto;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class AverageByMonthAnalyzer {
 
     public List<AverageByPeriodDto> analyze(AnalyticsAggregationContext context) {
         return context.byMonth().entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
                 .map(entry -> new AverageByPeriodDto(
                         entry.getKey().name(),
                         entry.getValue().getAverageConsumptionKwh(),
