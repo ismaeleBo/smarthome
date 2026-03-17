@@ -37,4 +37,15 @@ public interface MeasurementRepository extends JpaRepository<Measurement, Long> 
 			LocalDateTime from,
 			LocalDateTime to,
 			String applianceType);
+
+	List<Measurement> findByHomeIdInAndMeasurementTimeBetweenOrderByMeasurementTimeAsc(
+			List<Integer> homeIds,
+			LocalDateTime from,
+			LocalDateTime to);
+
+	List<Measurement> findByHomeIdInAndMeasurementTimeBetweenAndApplianceTypeOrderByMeasurementTimeAsc(
+			List<Integer> homeIds,
+			LocalDateTime from,
+			LocalDateTime to,
+			String applianceType);
 }

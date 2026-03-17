@@ -6,10 +6,13 @@ import java.util.List;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ismaelebonaventura.measurements_service.dto.BatchMeasurementRequest;
 import com.ismaelebonaventura.measurements_service.dto.DeviceResponse;
 import com.ismaelebonaventura.measurements_service.dto.MeasurementResponse;
 import com.ismaelebonaventura.measurements_service.service.MeasurementQueryService;
@@ -35,5 +38,15 @@ public class InternalMeasurementController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to,
             @RequestParam(required = false) String applianceType) {
         return measurementQueryService.getMeasurements(homeId, from, to, applianceType);
+    }
+
+    @PostMapping("/measurements/batch")
+    public List<MeasurementResponse> getBatchMeasurements(
+            @RequestBody BatchMeasurementRequest request) {
+        return measurementQueryService.getBatchMeasurements(
+                request.homeIds(),
+                request.from(),
+                request.to(),
+                request.applianceType());
     }
 }

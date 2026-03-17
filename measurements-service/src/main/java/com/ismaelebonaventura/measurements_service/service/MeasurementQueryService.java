@@ -85,8 +85,42 @@ public class MeasurementQueryService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<MeasurementResponse> getBatchMeasurements(
+            List<Integer> homeIds,
+            LocalDateTime from,
+            LocalDateTime to,
+            String applianceType) {
+
+        if (homeIds == null || homeIds.isEmpty()) {
+            throw new IllegalArgumentException("homeIds are required");
+        }
+        if (from == null || to == null) {
+            throw new IllegalArgumentException("from and to are required");
+        }
+
+        if (from.isAfter(to)) {
+            throw new IllegalArgumentException("from must be before or equal to to");
+        }
+
+        List<Measurement> measurements;
+
+        if (applianceType == null || applianceType.isBlank()) {
+            measurements = repository.findByHomeIdInAndMeasurementTimeBetweenOrderByMeasurementTimeAsc(
+                    homeIds, from, to);
+        } else {
+            measurements = repository.findByHomeIdInAndMeasurementTimeBetweenAndApplianceTypeOrderByMeasurementTimeAsc(
+                    homeIds, from, to, applianceType.trim());
+        }
+
+        return measurements.stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
     private MeasurementResponse toResponse(Measurement m) {
         return new MeasurementResponse(
+                m.getHomeId(),
                 m.getMeasurementTime(),
                 m.getApplianceType(),
                 m.getEnergyConsumptionKwh(),
