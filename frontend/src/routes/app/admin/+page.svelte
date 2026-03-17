@@ -429,91 +429,89 @@
 		</div>
 
 		<!-- ASSIGN ANALYST -->
-			<section class="space-y-4 rounded-2xl border bg-white p-5">
+		<section class="space-y-4 rounded-2xl border bg-white p-5">
+			<div>
+				<h2 class="text-lg font-semibold">Assign Home to Analyst</h2>
+				<p class="text-sm opacity-70">Select an analyst and the configured homes to associate.</p>
+			</div>
+
+			<div class="space-y-3">
 				<div>
-					<h2 class="text-lg font-semibold">Assign Home to Analyst</h2>
-					<p class="text-sm opacity-70">Select an analyst and the configured homes to associate.</p>
+					<label for="analyst" class="text-sm font-medium">Analyst</label>
+					<select
+						name="analyst"
+						id="analyst"
+						class="mt-1 w-full rounded-xl border p-2"
+						bind:value={analystAssignment.analystUserId}
+						onchange={(e) => handleAnalystChange((e.currentTarget as HTMLSelectElement).value)}
+					>
+						<option value="">Seleziona Analyst</option>
+						{#each analysts as analyst}
+							<option value={analyst.id}>
+								{analyst.firstName}
+								{analyst.lastName} - {analyst.email}
+							</option>
+						{/each}
+					</select>
 				</div>
 
-				<div class="space-y-3">
-					<div>
-						<label for="analyst" class="text-sm font-medium">Analyst</label>
-						<select
-							name="analyst"
-							id="analyst"
-							class="mt-1 w-full rounded-xl border p-2"
-							bind:value={analystAssignment.analystUserId}
-							onchange={(e) => handleAnalystChange((e.currentTarget as HTMLSelectElement).value)}
-						>
-							<option value="">Seleziona Analyst</option>
-							{#each analysts as analyst}
-								<option value={analyst.id}>
-									{analyst.firstName}
-									{analyst.lastName} - {analyst.email}
-								</option>
-							{/each}
-						</select>
+				{#if analystAssignment.analystUserId}
+					<div class="space-y-2">
+						<p class="text-sm font-medium">Available Homes</p>
+
+						{#if analystAssignmentsLoading}
+							<div class="rounded-xl border p-3 text-sm opacity-70">
+								Loading homes assignments...
+							</div>
+						{:else}
+							<div class="max-h-56 space-y-2 overflow-auto rounded-xl border p-3">
+								{#each configuredHomes as home}
+									<label class="flex items-center gap-2 text-sm">
+										<input
+											type="checkbox"
+											checked={analystAssignment.homeIds.includes(home.homeId)}
+											onchange={(e) =>
+												toggleAnalystHome(
+													home.homeId,
+													(e.currentTarget as HTMLInputElement).checked
+												)}
+											disabled={!analystAssignment.analystUserId}
+										/>
+										<span>Home #{home.homeId} - {homeStatusLabel(home.homeId)}</span>
+									</label>
+								{/each}
+							</div>
+						{/if}
 					</div>
 
-					{#if analystAssignment.analystUserId}
-						<div class="space-y-2">
-							<p class="text-sm font-medium">Available Homes</p>
-
-							{#if analystAssignmentsLoading}
-								<div class="rounded-xl border p-3 text-sm opacity-70">
-									Loading homes assignments...
-								</div>
-							{:else}
-								<div class="max-h-56 space-y-2 overflow-auto rounded-xl border p-3">
-									{#each configuredHomes as home}
-										<label class="flex items-center gap-2 text-sm">
-											<input
-												type="checkbox"
-												checked={analystAssignment.homeIds.includes(home.homeId)}
-												onchange={(e) =>
-													toggleAnalystHome(
-														home.homeId,
-														(e.currentTarget as HTMLInputElement).checked
-													)}
-												disabled={!analystAssignment.analystUserId}
-											/>
-											<span>Home #{home.homeId} - {homeStatusLabel(home.homeId)}</span>
-										</label>
-									{/each}
-								</div>
-							{/if}
-						</div>
-
-						<button
-							class="rounded-xl bg-black p-2 text-white disabled:opacity-50"
-							onclick={submitAssignAnalystHomes}
-							disabled={!analystAssignment.analystUserId || analystAssignmentsLoading}
-						>
-							Save Assignments
-						</button>
-					{/if}
-				</div>
-			</section>
+					<button
+						class="rounded-xl bg-black p-2 text-white disabled:opacity-50"
+						onclick={submitAssignAnalystHomes}
+						disabled={!analystAssignment.analystUserId || analystAssignmentsLoading}
+					>
+						Save Assignments
+					</button>
+				{/if}
+			</div>
+		</section>
 
 		<div class="grid gap-6 xl:grid-cols-[2fr,1fr]">
 			<section class="space-y-4 rounded-2xl border bg-white p-5">
 				<div>
 					<h2 class="text-lg font-semibold">Configured Homes</h2>
-					<p class="text-sm opacity-70">
-						List of currently configured homes.
-					</p>
+					<p class="text-sm opacity-70">List of currently configured homes.</p>
 				</div>
 
-				<div class="overflow-x-auto overflow-y-scroll max-h-96">
+				<div class="max-h-96 overflow-x-auto overflow-y-scroll">
 					<table class="w-full text-sm">
 						<thead>
 							<tr class="border-b text-left">
 								<th class="py-2 pr-3">Home</th>
 								<th class="py-2 pr-3">Status</th>
-								<th class="py-2 pr-3">City</th>
+								<th class="py-2 pr-3">Address</th>
 								<th class="py-2 pr-3">Price/kWh</th>
 								<th class="py-2 pr-3">Head</th>
-								<th class="py-2 pr-3">Azioni</th>
+								<th class="py-2 pr-3">Actions</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -521,7 +519,7 @@
 								<tr class="border-b align-top">
 									<td class="py-3 pr-3 font-medium">#{home.homeId}</td>
 									<td class="py-3 pr-3">{home.status}</td>
-									<td class="py-3 pr-3">{home.city}</td>
+									<td class="py-3 pr-3">{home.address} {home.streetNumber}, {home.city}</td>
 									<td class="py-3 pr-3">{home.pricePerKwh}€</td>
 									<td class="py-3 pr-3">
 										<div class="space-y-2">
@@ -587,7 +585,7 @@
 				<p class="text-sm opacity-70">Quick view of users present in the system.</p>
 			</div>
 
-			<div class="overflow-x-auto overflow-y-scroll max-h-96">
+			<div class="max-h-96 overflow-x-auto overflow-y-scroll">
 				<table class="w-full text-sm">
 					<thead>
 						<tr class="border-b text-left">

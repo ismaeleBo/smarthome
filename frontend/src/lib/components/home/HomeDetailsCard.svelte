@@ -2,8 +2,8 @@
 	import type { HomeResponse } from '$lib/contracts/home';
 
 	type Props = {
-		loading: boolean;
-		error: string | null;
+		loading?: boolean;
+		error?: string | null;
 		home: HomeResponse | null;
 	};
 
@@ -23,10 +23,14 @@
 		</div>
 	{:else if home}
 		<div class="text-sm">
-			<div><span class="font-medium">Address: </span> {home.address} {home.streetNumber}, {home.city}</div>
+			<div>
+				<span class="font-medium">Address: </span>
+				{home.address}
+				{home.streetNumber}, {home.city}
+			</div>
 			<div><span class="font-medium">Price per kWh:</span> {home.pricePerKwh}€</div>
 		</div>
 	{:else}
-		<p class="text-sm opacity-70">Nessuna home selezionata.</p>
+		<p class="text-sm opacity-70">No home selected.</p>
 	{/if}
 </section>

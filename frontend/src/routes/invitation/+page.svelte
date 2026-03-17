@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
 	import { onMount } from 'svelte';
 
 	import { AuthApi } from '$lib/api/auth';
@@ -160,9 +160,6 @@
 				<section class="space-y-4 rounded-2xl border bg-white p-6">
 					<div>
 						<h1 class="text-xl font-semibold">Accept Invitation</h1>
-						<p class="text-sm opacity-70">
-							You are logged in as a MEMBER. You can accept the invitation directly.
-						</p>
 					</div>
 
 					{#if acceptError}
