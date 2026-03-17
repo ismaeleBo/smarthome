@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -77,29 +78,27 @@ public class AnalystDashboardService {
 			throw new IllegalStateException("No configured homes available in the selected subset");
 		}
 
-		List<CompletableFuture<List<AnalyticsMeasurement>>> measurementFutures = selectedConfiguredHomes.stream()
-				.map(home -> CompletableFuture.supplyAsync(() -> {
-					List<RemoteMeasurementResponse> rawMeasurements = measurementInternalClient.getMeasurements(
-							home.homeId(),
-							from,
-							to,
-							applianceType);
+		Map<Integer, Double> homePriceMap = selectedConfiguredHomes.stream()
+				.collect(Collectors.toMap(RemoteUserHomeInfoResponse::homeId, RemoteUserHomeInfoResponse::pricePerKwh));
 
-					return rawMeasurements.stream()
-							.map(m -> new AnalyticsMeasurement(
-									home.homeId(),
-									m.applianceType(),
-									m.measurementTime(),
-									m.energyConsumptionKwh(),
-									m.outdoorTemperatureC(),
-									home.pricePerKwh()))
-							.toList();
-				}, analyticsExecutor))
+		List<Integer> configuredHomeIds = selectedConfiguredHomes.stream()
+				.map(RemoteUserHomeInfoResponse::homeId)
 				.toList();
 
-		List<AnalyticsMeasurement> allMeasurements = measurementFutures.stream()
-				.map(CompletableFuture::join)
-				.flatMap(List::stream)
+		List<RemoteMeasurementResponse> rawMeasurements = measurementInternalClient.getBatchMeasurements(
+				configuredHomeIds,
+				from,
+				to,
+				applianceType);
+
+		List<AnalyticsMeasurement> allMeasurements = rawMeasurements.stream()
+				.map(m -> new AnalyticsMeasurement(
+						m.homeId(),
+						m.applianceType(),
+						m.measurementTime(),
+						m.energyConsumptionKwh(),
+						m.outdoorTemperatureC(),
+						homePriceMap.get(m.homeId())))
 				.toList();
 
 		AnalyticsAggregationContext context = aggregationContextBuilder.build(allMeasurements);
@@ -129,7 +128,7 @@ public class AnalystDashboardService {
 				.supplyAsync(() -> averageByMonthAnalyzer.analyze(context), analyticsExecutor);
 
 		return new AnalystDashboardResponse(
-				selectedConfiguredHomes.stream().map(RemoteUserHomeInfoResponse::homeId).toList(),
+				configuredHomeIds,
 				applianceType,
 				from,
 				to,

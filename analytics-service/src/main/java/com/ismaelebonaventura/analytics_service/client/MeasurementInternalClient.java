@@ -1,5 +1,6 @@
 package com.ismaelebonaventura.analytics_service.client;
 
+import com.ismaelebonaventura.analytics_service.remote.RemoteBatchMeasurementRequest;
 import com.ismaelebonaventura.analytics_service.remote.RemoteMeasurementResponse;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
@@ -39,6 +40,31 @@ public class MeasurementInternalClient {
                         .queryParam("to", to)
                         .queryParamIfPresent("applianceType", Optional.ofNullable(applianceType))
                         .build(homeId))
+                .retrieve()
+                .bodyToFlux(RemoteMeasurementResponse.class)
+                .collectList()
+                .block();
+
+        return response != null ? response : Collections.emptyList();
+    }
+
+    @Retry(name = "measurementsService")
+    @CircuitBreaker(name = "measurementsService")
+    public List<RemoteMeasurementResponse> getBatchMeasurements(
+            List<Integer> homeIds,
+            LocalDateTime from,
+            LocalDateTime to,
+            String applianceType) {
+
+        if (homeIds == null || homeIds.isEmpty()) {
+            throw new IllegalArgumentException("homeIds are required");
+        }
+
+        RemoteBatchMeasurementRequest request = new RemoteBatchMeasurementRequest(homeIds, from, to, applianceType);
+
+        List<RemoteMeasurementResponse> response = measurementsWebClient.post()
+                .uri("/internal/homes/measurements/batch")
+                .bodyValue(request)
                 .retrieve()
                 .bodyToFlux(RemoteMeasurementResponse.class)
                 .collectList()
