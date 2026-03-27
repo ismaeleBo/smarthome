@@ -10,7 +10,6 @@ spring:
     port: 5672
     username: ${SPRING_RABBITMQ_USERNAME}
     password: ${SPRING_RABBITMQ_PASSWORD}
-  spring:
   mail:
     host: sandbox.smtp.mailtrap.io
     port: 2525
